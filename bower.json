@@ -1,6 +1,6 @@
 {
-  "name": "lv-ripple",
-  "description": "Ripple effects",
+  "name": "lvRipple",
+  "description": "Ripple effects for jQuery",
   "main": "index.js",
   "authors": [
     "Antonio Dal Sie"
@@ -16,5 +16,12 @@
   ],
   "dependencies": {
     "jquery": "^3.1.0"
-  }
+  },
+  "keywords": [
+    "Ripple",
+    "Material",
+    "Design",
+    "jQuery",
+    "Plugin"
+  ]
 }

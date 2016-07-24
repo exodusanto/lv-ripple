@@ -1,14 +1,14 @@
 {
   "name": "lv-ripple",
   "version": "0.0.1",
-  "description": "Ripple effects",
+  "description": "Ripple effects for jQuery",
   "main": "dist/js/lv-ripple.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/exodusanto/lv-ripple"
   },
   "keywords": [
-    "angular",
+    "jQuery",
     "ripple",
     "material button",
     "matrial effects"
