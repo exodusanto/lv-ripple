@@ -1,3 +1,3 @@
 (function(exports){
-	exports.lvRipple.init();
+	$.ripple.init();
 })(window);

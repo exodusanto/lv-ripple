@@ -1,15 +1,16 @@
 # lv-ripple
 
-Material ripple effects directive for AngularJS,
+Material ripple effects for jQuery,
 Inspired by **Angular Material Design** , 
-this implementation contains the ripple animation for buttons and links
+this plugin contains the ripple animation for buttons and links
+
+**Angular version** [https://github.com/exodusanto/ng-ripple](https://github.com/exodusanto/ng-ripple)
+
 ### Version
-0.9.5
+0.0.1
 
 ### Dependencies
- - AngularJs
-
-You can also use **jQuery** version
+ - jQuery
 
 ## Installation
 **NPM**
@@ -18,12 +19,51 @@ $ npm install lv-ripple
 ```
 or **Bower**
 ```sh
-$ bower install ngRipple
+$ bower install lvRipple
 ```
 
 ## Examples
 Various examples: [https://lv-ripple.antoniodalsie.com/](https://lv-ripple.antoniodalsie.com/)
 
+## Command
+Search all ripple inside page
+``` js
+$.ripple().init();
+``` 
+Initialize element or a group of elements
+``` js
+$(selector).ripple();
+``` 
+
+**Other command:**
+
+Show all active ripple
+``` js
+$.ripple.list();
+``` 
+Enable/Disable element ripple
+``` js
+$(selector).ripple("enable");
+$(selector).ripple("disable");
+``` 
+Update option of ripple
+``` js
+$(selector).ripple("update");
+``` 
+Destroy element ripple
+``` js
+$(selector).ripple("destroy");
+``` 
+
+Save instance and use command
+``` js
+var instance = $(selector).ripple();
+instance.enable();
+instance.disable();
+instance.destroy();
+instance.update(); // update option
+instance.element(); // get element
+``` 
 ## Options
 Create directive with **Element**:
 
@@ -106,12 +146,12 @@ Prevent ink for specific element and children
 </ripple>
 ```
 
-## Angular Options
+## General Options
 ``` js
-    app.run(['rippleConfig', function(rippleConfig){
-		rippleConfig.rippleOpacity = .2;
-		rippleConfig.rippleDelay = 100;
-	}]);
+    $.ripple.config({
+		rippleOpacity: .2,
+		rippleDelay: 100
+	});
 ```
 
 **Ripple Opacity** (rippleOpacity):
@@ -123,26 +163,6 @@ For all element
 This is the delay of exit animation of ink
 
 ## Changelog
-Version 0.9.4:
+Version 0.0.1:
 
-Re-created animation of ink and general fix
-
-Version 0.9.4:
-
-Added **r-overink** for big element, added **r-noink** (prevent ink generation when you click a specific element)
-
-Version 0.9.3:
-
-Fix overflow ink problem
-
-Version 0.9.1:
-
-Fix disabled option.
-
-Version 0.9.0:
-
-Add **standalone version**.
-
-Version 0.5.1:
-
-Add **Fab** option.
+Create plugin

@@ -20,26 +20,32 @@
 			elements = $("ripple, *[ripple], .ripple");
 		}
 
-		function destroyElements(){
+		function _destroyElements(){
 			$(elements).each(function(index, el) {
 				$(el).trigger('r-destroy');
 				delete elements[index];
 			});
 		}
 
-		function disableElements(){
+		function _disableElements(){
 			$(elements).each(function(index, el) {
-				$(el).trigger('r-destroy');
+				$(el).trigger('r-disable');
 				delete elements[index];
 				unelements.push(el);
 			});
 		}
 
-		function enableElements(){
+		function _enableElements(){
 			$(unelements).each(function(index, el) {
 				$(el).trigger('r-enable');
 				delete unelements[index];
 				elements.push(el);
+			});
+		}
+
+		function _updateElements(){
+			$(elements).each(function(index, el) {
+				$(el).trigger('r-update');
 			});
 		}
 
@@ -58,6 +64,10 @@
 			$(elem).trigger('r-enable');
 			unelements.pop(elem[0]);
 			elements.push(elem[0]);
+		}
+
+		function updateElement(elem){
+			$(elem).trigger('r-update');
 		}
 
 		function createMarkup(element){
@@ -109,20 +119,25 @@
 			});
 		}
 
-		function createElement(el){
-			var markup = createMarkup(el);
-			var idmark = $.now();
-			markup = $(markup);
-			markup.addClass("ripple-idm-"+idmark);
+		function createElement(elem){
+			if($(elem).length <= 1){
+				var markup = createMarkup(elem);
+				var idmark = $.now();
+				markup = $(markup);
+				markup.addClass("ripple-idm-"+idmark);
 
-			$(el).after(markup).remove();
-			markup = $(".ripple-idm-"+idmark);
-			markup.removeClass("ripple-idm-"+idmark);
+				$(elem).after(markup).remove();
+				markup = $(".ripple-idm-"+idmark);
+				markup.removeClass("ripple-idm-"+idmark);
 
-			var index = elements.push(markup[0]);
-			return rippleInit(markup[0],index);
+				var index = elements.push(markup[0]);
+				return rippleInit(markup[0],index);
+			}else{
+				$(elem).each(function(index, el) {
+					return createElement(el);
+				});
+			}
 		}
-
 
 		function rippleInit(element,index){
 
@@ -142,6 +157,13 @@
 			rippleEventArray[index] = [];
 
 			elem.on("r-destroy",function(){
+				elem.children(".ink-content").remove();
+				elem.find(".ripple-content").unwrap();
+				elem.removeClass('ripple-content');
+				elem.unbind('mousedown touchstart',createRipple);
+			});
+
+			elem.on("r-disable",function(){
 				elem.unbind('mousedown touchstart',createRipple);
 			});
 
@@ -149,15 +171,23 @@
 				elem.bind('mousedown touchstart',createRipple);
 			});
 
+			elem.on("r-update",function(){
+				_setValue();
+			});
+
 			elem.removeClass('ripple');
 			rippleCont = elem.children(".ink-content");
 
-			icon = elem.hasClass('r-icon');
-			overInk = elem.hasClass('r-overink');
-			inkLight = typeof element.attributes['r-light'] !== "undefined";
-			inkColor = typeof element.attributes['r-color'] !== "undefined" ? element.attributes['r-color'].nodeValue : false;
-			customOpacity = typeof element.attributes['r-opacity'] !== "undefined" ? element.attributes['r-opacity'].nodeValue : null;
-			preventInk = typeof element.attributes['r-prevent'] !== "undefined" ? element.attributes['r-prevent'].nodeValue : false;
+			function _setValue(){
+				icon = elem.hasClass('r-icon');
+				overInk = elem.hasClass('r-overink');
+				inkLight = typeof element.attributes['r-light'] !== "undefined";
+				inkColor = typeof element.attributes['r-color'] !== "undefined" ? element.attributes['r-color'].nodeValue : false;
+				customOpacity = typeof element.attributes['r-opacity'] !== "undefined" ? element.attributes['r-opacity'].nodeValue : null;
+				preventInk = typeof element.attributes['r-prevent'] !== "undefined" ? element.attributes['r-prevent'].nodeValue : false;
+			}
+
+			_setValue();
 
 			elem.bind('mousedown touchstart',createRipple);
 
@@ -313,18 +343,21 @@
 				}
 			}
 
-			function destroySelf(){
+			function _destroySelf(){
+				elem.children(".ink-content").remove();
+				elem.find(".ripple-content").unwrap();
+				elem.removeClass('ripple-content');
 				elem.unbind('mousedown touchstart',createRipple);
 				elements.pop(elem[0]);
 			}
 
-			function disableSelf(){
+			function _disableSelf(){
 				elem.unbind('mousedown touchstart',createRipple);
 				elements.pop(elem[0]);
 				unelements.push(elem[0]);
 			}
 
-			function enebleSelf(){
+			function _enebleSelf(){
 				elem.bind('mousedown touchstart',createRipple);
 				unelements.pop(elem[0]);
 				elements.push(elem[0]);
@@ -332,12 +365,11 @@
 			
 			return {
 				element: elem,
-				destroy: destroySelf,
-				disable: disableSelf,
-				enable: enebleSelf
+				destroy: _destroySelf,
+				disable: _disableSelf,
+				enable: _enebleSelf,
+				update: _setValue
 			}
-
-
 		}
 		
 		function hexToRGB(hex){
@@ -353,7 +385,7 @@
 		}
 		
 		function _init(config){
-			!! config ? setConfig(config) : $.noop();
+			!! config ? _setConfig(config) : $.noop();
 			findElement();
 			createAllElements();
 		}
@@ -362,15 +394,15 @@
 			return !! elem ? createElement(elem) : createElement(this);
 		}
 
-		function getList(){
+		function _getList(){
 			return elements;
 		}
 
-		function getRippleEventArray(){
+		function _getRippleEventArray(){
 			return rippleEventArray;
 		}
 
-		function setConfig(config){
+		function _setConfig(config){
 			$.extend(rippleConfig, config);
 		}
 
@@ -382,6 +414,8 @@
 							break;
 				case "destroy": destroyElement(this)
 							break;
+				case "update": updateElement(this)
+							break;
 				default: return _initElement(this);
 						break;
 			}
@@ -390,12 +424,13 @@
 		return {
 			init: _init,
 			initElement: _initElement,
-			list: getList,
-			eventHistory: getRippleEventArray,
-			config: setConfig,
-			destroy: destroyElements,
-			disable: disableElements,
-			enable: enableElements,
+			list: _getList,
+			eventHistory: _getRippleEventArray,
+			config: _setConfig,
+			destroy: _destroyElements,
+			disable: _disableElements,
+			enable: _enableElements,
+			update: _updateElements,
 			switch: _findCommand
 		}
 	})();
