@@ -28,7 +28,7 @@ Various examples: [https://lv-ripple.antoniodalsie.com/](https://lv-ripple.anton
 ## Command
 Search all ripple inside page
 ``` js
-$.ripple().init();
+$.ripple.init();
 ``` 
 Initialize element or a group of elements
 ``` js
