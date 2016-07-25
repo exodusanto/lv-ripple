@@ -7,7 +7,7 @@ this plugin contains the ripple animation for buttons and links
 **Angular version** [https://github.com/exodusanto/ng-ripple](https://github.com/exodusanto/ng-ripple)
 
 ### Version
-0.0.3
+0.1.0
 
 ### Dependencies
  - jQuery
@@ -163,6 +163,7 @@ For all element
 This is the delay of exit animation of ink
 
 ## Changelog
+
 Version 0.0.3:
 
 Fix double fire mobile event
