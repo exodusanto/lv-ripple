@@ -163,6 +163,10 @@ For all element
 This is the delay of exit animation of ink
 
 ## Changelog
+Version 0.0.2:
+
+Fix array type (from jQuery to JS)
+
 Version 0.0.1:
 
 Create plugin
