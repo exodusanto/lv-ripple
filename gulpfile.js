@@ -1,7 +1,8 @@
 var gulp  = require("gulp"),
-uglify    = require('gulp-uglify');
-minifyCss = require('gulp-minify-css');
-concat    = require('gulp-concat');
+uglify    = require('gulp-uglify'),
+minifyCss = require('gulp-minify-css'),
+concat    = require('gulp-concat'),
+browserSync = require('browser-sync');
 
 gulp.task("js-jquery",function(){
   return gulp.src("src/js/lv-ripple.jquery.js")
@@ -36,3 +37,9 @@ gulp.task("css:min",function(){
 });
 
 gulp.task("default",["js","js:min","css","css:min"]);
+
+gulp.task("watch",function(){
+  browserSync.init({
+      server: "./",
+  });
+});

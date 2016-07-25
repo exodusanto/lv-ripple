@@ -4,6 +4,7 @@
 * Description: Material ripple effects
 */
 (function($,exports){
+
 	var lvRipple = (function(){
 
 		var elements = [];
@@ -17,30 +18,45 @@
 		};
 
 		function findElement(){
-			elements = $("ripple, *[ripple], .ripple");
+			elements = $("ripple, *[ripple], .ripple").toArray();
+		}
+
+		function arrayRemove(array,elem){
+			var index = array.indexOf(elem);
+			if (index > -1) {
+			    delete array[index];
+			}
+			array = arrayClear(array);
+		}
+
+		function arrayClear(array){
+			return array.filter(function(n){ return n != undefined });
 		}
 
 		function _destroyElements(){
 			$(elements).each(function(index, el) {
-				$(el).trigger('r-destroy');
 				delete elements[index];
+				$(el).trigger('r-destroy');
 			});
+			elements = arrayClear(elements);
 		}
 
 		function _disableElements(){
 			$(elements).each(function(index, el) {
-				$(el).trigger('r-disable');
 				delete elements[index];
+				$(el).trigger('r-disable');
 				unelements.push(el);
 			});
+			elements = arrayClear(elements);
 		}
 
 		function _enableElements(){
 			$(unelements).each(function(index, el) {
-				$(el).trigger('r-enable');
 				delete unelements[index];
+				$(el).trigger('r-enable');
 				elements.push(el);
 			});
+			unelements = arrayClear(unelements);
 		}
 
 		function _updateElements(){
@@ -50,20 +66,20 @@
 		}
 
 		function destroyElement(elem){
+			arrayRemove(elements,$(elem)[0]);
 			$(elem).trigger('r-destroy');
-			elements.pop(elem[0]);
 		}
 
 		function disableElement(elem){
-			$(elem).trigger('r-destroy');
-			elements.pop(elem[0]);
-			unelements.push(elem[0]);
+			arrayRemove(elements,$(elem)[0]);
+			$(elem).trigger('r-disable');
+			unelements.push($(elem)[0]);
 		}
 
 		function enableElement(elem){
+			arrayRemove(unelements,$(elem)[0]);
 			$(elem).trigger('r-enable');
-			unelements.pop(elem[0]);
-			elements.push(elem[0]);
+			elements.push($(elem)[0]);
 		}
 
 		function updateElement(elem){
@@ -104,7 +120,7 @@
 	    }
 
 		function createAllElements(){
-			elements.each(function(index, el) {
+			$(elements).each(function(index, el) {
 				var markup = createMarkup(el);
 				var idmark = $.now();
 				markup = $(markup);
@@ -158,8 +174,10 @@
 
 			elem.on("r-destroy",function(){
 				elem.children(".ink-content").remove();
-				elem.find(".ripple-content").unwrap();
-				elem.removeClass('ripple-content');
+				var cont = elem.find(".ripple-content").html();
+				elem.find(".ripple-content").remove();
+				elem.append(cont);
+				elem.removeClass('ripple-cont');
 				elem.unbind('mousedown touchstart',createRipple);
 			});
 
@@ -344,23 +362,25 @@
 			}
 
 			function _destroySelf(){
+				arrayRemove(elements,$(elem)[0]);
 				elem.children(".ink-content").remove();
-				elem.find(".ripple-content").unwrap();
-				elem.removeClass('ripple-content');
+				var cont = elem.find(".ripple-content").html();
+				elem.find(".ripple-content").remove();
+				elem.append(cont);
+				elem.removeClass('ripple-cont');
 				elem.unbind('mousedown touchstart',createRipple);
-				elements.pop(elem[0]);
 			}
 
 			function _disableSelf(){
+				arrayRemove(elements,$(elem)[0]);
 				elem.unbind('mousedown touchstart',createRipple);
-				elements.pop(elem[0]);
-				unelements.push(elem[0]);
+				unelements.push($(elem)[0]);
 			}
 
 			function _enebleSelf(){
+				arrayRemove(unelements,$(elem)[0]);
 				elem.bind('mousedown touchstart',createRipple);
-				unelements.pop(elem[0]);
-				elements.push(elem[0]);
+				elements.push($(elem)[0]);
 			}
 			
 			return {
