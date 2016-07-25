@@ -7,8 +7,10 @@
 
 	var lvRipple = (function(){
 
-		var elements = [];
-		var unelements = [];
+		var elements = {
+			enable: [],
+			disable: []
+		};
 
 		var rippleEventArray = []; //single init ripple
 
@@ -18,7 +20,7 @@
 		};
 
 		function findElement(){
-			elements = $("ripple, *[ripple], .ripple").toArray();
+			elements.enable = $("ripple, *[ripple], .ripple").toArray();
 		}
 
 		function arrayRemove(array,elem){
@@ -26,7 +28,7 @@
 			if (index > -1) {
 			    delete array[index];
 			}
-			array = arrayClear(array);
+			return arrayClear(array);
 		}
 
 		function arrayClear(array){
@@ -34,52 +36,52 @@
 		}
 
 		function _destroyElements(){
-			$(elements).each(function(index, el) {
-				delete elements[index];
+			$(elements.enable).each(function(index, el) {
+				delete elements.enable[index];
 				$(el).trigger('r-destroy');
 			});
-			elements = arrayClear(elements);
+			elements.enable = arrayClear(elements.enable);
 		}
 
 		function _disableElements(){
-			$(elements).each(function(index, el) {
-				delete elements[index];
+			$(elements.enable).each(function(index, el) {
+				delete elements.enable[index];
 				$(el).trigger('r-disable');
-				unelements.push(el);
+				elements.disable.push(el);
 			});
-			elements = arrayClear(elements);
+			elements.enable = arrayClear(elements.enable);
 		}
 
 		function _enableElements(){
-			$(unelements).each(function(index, el) {
-				delete unelements[index];
+			$(elements.disable).each(function(index, el) {
+				delete elements.disable[index];
 				$(el).trigger('r-enable');
-				elements.push(el);
+				elements.enable.push(el);
 			});
-			unelements = arrayClear(unelements);
+			elements.disable = arrayClear(elements.disable);
 		}
 
 		function _updateElements(){
-			$(elements).each(function(index, el) {
+			$(elements.enable).each(function(index, el) {
 				$(el).trigger('r-update');
 			});
 		}
 
 		function destroyElement(elem){
-			arrayRemove(elements,$(elem)[0]);
+			elements.enable = arrayRemove(elements.enable,$(elem)[0]);
 			$(elem).trigger('r-destroy');
 		}
 
 		function disableElement(elem){
-			arrayRemove(elements,$(elem)[0]);
+			elements.enable = arrayRemove(elements.enable,$(elem)[0]);
 			$(elem).trigger('r-disable');
-			unelements.push($(elem)[0]);
+			elements.disable.push($(elem)[0]);
 		}
 
 		function enableElement(elem){
-			arrayRemove(unelements,$(elem)[0]);
+			elements.disable = arrayRemove(elements.disable,$(elem)[0]);
 			$(elem).trigger('r-enable');
-			elements.push($(elem)[0]);
+			elements.enable.push($(elem)[0]);
 		}
 
 		function updateElement(elem){
@@ -120,7 +122,7 @@
 	    }
 
 		function createAllElements(){
-			$(elements).each(function(index, el) {
+			$(elements.enable).each(function(index, el) {
 				var markup = createMarkup(el);
 				var idmark = $.now();
 				markup = $(markup);
@@ -130,7 +132,7 @@
 				markup = $(".ripple-idm-"+idmark);
 				markup.removeClass("ripple-idm-"+idmark);
 
-				elements[index] = markup[0];
+				elements.enable[index] = markup[0];
 				rippleInit(markup[0],index);
 			});
 		}
@@ -146,7 +148,7 @@
 				markup = $(".ripple-idm-"+idmark);
 				markup.removeClass("ripple-idm-"+idmark);
 
-				var index = elements.push(markup[0]);
+				var index = elements.enable.push(markup[0]);
 				return rippleInit(markup[0],index);
 			}else{
 				$(elem).each(function(index, el) {
@@ -210,6 +212,7 @@
 			elem.bind('mousedown touchstart',createRipple);
 
 			function createRipple(event){
+				event.preventDefault();
 
 				if(rippleEventArray[index].indexOf(event.timeStamp) != -1)return;
 				rippleEventArray[index].push(event.timeStamp);
@@ -362,7 +365,7 @@
 			}
 
 			function _destroySelf(){
-				arrayRemove(elements,$(elem)[0]);
+				elements.enable = arrayRemove(elements.enable,$(elem)[0]);
 				elem.children(".ink-content").remove();
 				var cont = elem.find(".ripple-content").html();
 				elem.find(".ripple-content").remove();
@@ -372,15 +375,15 @@
 			}
 
 			function _disableSelf(){
-				arrayRemove(elements,$(elem)[0]);
+				elements.enable = arrayRemove(elements.enable,$(elem)[0]);
 				elem.unbind('mousedown touchstart',createRipple);
-				unelements.push($(elem)[0]);
+				elements.disable.push($(elem)[0]);
 			}
 
 			function _enebleSelf(){
-				arrayRemove(unelements,$(elem)[0]);
+				elements.disable = arrayRemove(elements.disable,$(elem)[0]);
 				elem.bind('mousedown touchstart',createRipple);
-				elements.push($(elem)[0]);
+				elements.enable.push($(elem)[0]);
 			}
 			
 			return {
