@@ -163,7 +163,7 @@ For all element
 This is the delay of exit animation of ink
 
 ## Changelog
-Version 0.0.2:
+Version 0.0.3:
 
 Fix double fire mobile event
 
