@@ -258,7 +258,15 @@
 			elem.bind(listenType.start,createRipple);
 
 			function createRipple(event){
-				event.preventDefault();
+				var timeStamp = event.timeStamp;
+
+				if(timeStamp == 0){
+					var date = new Date();
+					timeStamp = date.getTime();
+				}
+
+				if(elem.hasClass('r-childprevent')) return elem.removeClass('r-childprevent');
+				elem.parents(".ripple-cont").addClass('r-childprevent');
 
 				if(rippleEventArray[index].indexOf(event.timeStamp) != -1)return;
 				rippleEventArray[index].push(event.timeStamp);
