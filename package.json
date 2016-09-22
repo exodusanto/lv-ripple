@@ -1,6 +1,6 @@
 {
   "name": "lv-ripple",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Ripple effects for jQuery",
   "main": "dist/js/lv-ripple.js",
   "repository": {
