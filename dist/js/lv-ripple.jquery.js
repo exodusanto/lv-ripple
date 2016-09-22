@@ -103,7 +103,6 @@
 			if($(element).prop('nodeName').toLowerCase() != "ripple"){
 				var cloneElement = $(element).clone();
 				$(cloneElement).empty();
-				cloneElement[0].className = "";
 				$(cloneElement).removeClass('ripple');
 				$(cloneElement).removeAttr('ripple');
 				$(cloneElement).removeAttr('data-ripple');
@@ -115,10 +114,6 @@
 					markup = $(cloneElement);
 				}
 			}
-
-			$.each(element.attributes, function() {
-			    markup.attr(this.name, this.value);
-			});
 
 			markup.addClass('ripple-cont');
 
