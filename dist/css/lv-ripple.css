@@ -41,7 +41,7 @@
 	transition: all .3s;
 }
 
-.ripple-cont:hover{
+.ripple-cont:hover,.ripple-cont.r-int-disabled:active{
 	background-color: rgba(158,158,158,0.2);
 }
 .ripple-cont:active{
@@ -56,6 +56,11 @@
 
 .ripple-cont.r-card{
 	padding: 0;
+	width: 100%;
+}
+
+.ripple-cont.r-full{
+	width: 100%;
 }
 
 .ripple-cont.r-icon{
@@ -126,11 +131,13 @@
 	-webkit-mask-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC");
 	mask-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC");
 	border-radius: 2px;
+	pointer-events: none;
 	transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1) 0ms;
 }
 .ripple-cont.r-overink > .ink-content{
 	display: none;
 	z-index: 3;
+	transition: all 400ms cubic-bezier(0.25, 0.8, 0.25, 1) 0ms, z-index 1ms linear 0s;
 }
 .ink-content .ink, .ink-content .ink > i{
 	display: block; position: absolute;

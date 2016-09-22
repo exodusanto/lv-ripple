@@ -15,7 +15,8 @@
     "tests"
   ],
   "dependencies": {
-    "jquery": "^3.1.0"
+    "jquery": "^3.1.0",
+    "pointer_events_polyfill": "kmewhort/pointer_events_polyfill"
   },
   "keywords": [
     "Ripple",

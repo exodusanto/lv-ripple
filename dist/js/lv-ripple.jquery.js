@@ -16,7 +16,8 @@
 
 		var rippleConfig = {
 			'rippleOpacity': .2,
-			'rippleDelay': 100
+			'rippleDelay': 100,
+			'mobileTouch': false
 		};
 
 		function findElement(){
@@ -91,19 +92,46 @@
 		function createMarkup(element){
 			var content = $(element).html();
 			var markup = $("<button></button>");
+			var overink = $(element).hasClass('r-overink');
 
-			markup = $(element).prop('nodeName').toLowerCase() != "ripple" 
-					? $(replaceElement(element,$(element).prop('nodeName').toLowerCase()))
-					: $(replaceElement(element,"button"));
+			if(overink){
+				markup = $("<div></div>");
+				var replacement = $("<button></button>");
+			}
 
-			markup.removeClass('ripple');
-			markup.removeAttr('ripple data-ripple ng-ripple');
+
+			if($(element).prop('nodeName').toLowerCase() != "ripple"){
+				var cloneElement = $(element).clone();
+				$(cloneElement).empty();
+				cloneElement[0].className = "";
+				$(cloneElement).removeClass('ripple');
+				$(cloneElement).removeAttr('ripple');
+				$(cloneElement).removeAttr('data-ripple');
+				$(cloneElement).removeAttr('lv-ripple');
+				
+				if(overink){
+					replacement = $(cloneElement);
+				}else{
+					markup = $(cloneElement);
+				}
+			}
+
+			$.each(element.attributes, function() {
+			    markup.attr(this.name, this.value);
+			});
 
 			markup.addClass('ripple-cont');
 
-			markup.append("<div class='ripple-content'>"+content+"</div>");
-			markup.append("<div class='ink-content'></div>");
+			if(overink){
+				replacement.addClass('ripple-content');
+				replacement.html(content);
 
+				markup.append(replacement);
+			}else{
+				markup.append("<div class='ripple-content'>"+content+"</div>");
+			}
+
+			markup.append("<div class='ink-content'></div>");
 			return markup[0].outerHTML;
 		}
 
@@ -168,9 +196,27 @@
 			var overInk = false;
 			var preventInk = false;
 			var index = index;
+			var longTouch = null;
+			var scrollTouch = null;
 			
 			elem = $(element);
 			element = elem[0];
+
+			if(typeof PointerEventsPolyfill !== "undefined"){
+				PointerEventsPolyfill.initialize({
+					'selector': elem,
+					'mouseEvents': ['click','dblclick']
+				});
+			}
+
+			var listenType = {
+				"start" : ('ontouchstart' in document.documentElement) 
+						? !!rippleConfig.mobileTouch 
+							? 'touchstart'
+							: 'click'
+						: 'mousedown',
+				"end" : ('ontouchend' in document.documentElement) ? 'touchend' : 'mouseup'
+			};
 
 			rippleEventArray[index] = [];
 
@@ -180,15 +226,15 @@
 				elem.find(".ripple-content").remove();
 				elem.append(cont);
 				elem.removeClass('ripple-cont');
-				elem.unbind('mousedown touchstart',createRipple);
+				elem.unbind(listenType.start,createRipple);
 			});
 
 			elem.on("r-disable",function(){
-				elem.unbind('mousedown touchstart',createRipple);
+				elem.unbind(listenType.start,createRipple);
 			});
 
 			elem.on("r-enable",function(){
-				elem.bind('mousedown touchstart',createRipple);
+				elem.bind(listenType.start,createRipple);
 			});
 
 			elem.on("r-update",function(){
@@ -209,7 +255,7 @@
 
 			_setValue();
 
-			elem.bind('mousedown touchstart',createRipple);
+			elem.bind(listenType.start,createRipple);
 
 			function createRipple(event){
 				event.preventDefault();
@@ -255,28 +301,21 @@
 					x = 0;
 					y = 0;
 				}
-				
 
-				//Set max between width and height
-				var bd = Math.max(rippleCont.outerWidth(), rippleCont.outerHeight());
 				//Set total translate
-				var tr = x + y;
-				//Set diagonal of ink circle
-				var d = bd + tr;
-				//Set default diameter without translate
-				bd -= tr;
+				var tr = (x*2) + (y*2);
 
 				var h = rippleCont.outerHeight();
 				var w = rippleCont.outerWidth();
 
 				//Set diagonal of ripple container
-				var diag = Math.sqrt(w * w + h * h);
+				var d = Math.sqrt(w * w + h * h);
 				//Set incremental diameter of ripple
-				var incrmax = (diag - bd);
+				var incrmax = tr;
 				
 				incrmax = icon ? 0 : incrmax;
 
-				inkWrapper.css({height: d+incr, width: d+incr});
+				inkWrapper.css({height: d, width: d});
 
 				ink.css("opacity",0);
 				
@@ -325,21 +364,23 @@
 				}
 				
 				function listenerPress(){
-					$(window).bind('mouseup blur touchend', removeInk);
+					$(window).bind(listenType.end+' blur', removeInk);
 					elem.bind('mouseleave',removeInk);
 				}
 
 				function removeInk(){
-					$(window).unbind('mouseup blur touchend', removeInk);
+					$(window).unbind(listenType.end+' blur', removeInk);
 					elem.unbind('mouseleave', removeInk);
 
 					clearInterval(inkGrow);
+					clearInterval(longTouch);
+					clearInterval(scrollTouch);
 
 					var delay = incr <= incrmax ? rippleConfig.rippleDelay : 1;
 					incr = incr < incrmax ? incrmax : incr;
 					inkWrapper.css({
-							height: d+incr,
-							width: d+incr
+						height: d+incr,
+						width: d+incr
 					});
 					setTimeout(function(){
 						ink.css({
@@ -359,6 +400,19 @@
 					setTimeout(function(){
 						removeInk();
 					},100);
+				}else if(event.type == "click"){
+					setTimeout(function(){
+						removeInk();
+					},300);
+				}else if(event.type == "touchstart"){
+					longTouch = setTimeout(function(){
+						removeInk();
+					},1000);
+					$(window).bind('scroll',forceRemoveInk);
+					scrollTouch = setTimeout(function(){
+						$(window).unbind('scroll',forceRemoveInk);
+					},500);
+					listenerPress();
 				}else{
 					listenerPress();
 				}
