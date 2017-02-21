@@ -96,7 +96,7 @@
 				}
 				return element[0].outerHTML;
 			}
-			
+
 			var content = $(element).html();
 			var markup = $("<button></button>");
 			var overink = $(element).hasClass('r-overink');
@@ -188,21 +188,22 @@
 		}
 
 		function rippleInit(element,index){
-
 			var elem = null;
-			var rippleCont = null;
 			var inkLight = false;
 			var inkColor = false;
 			var customOpacity = null;
 			var icon = false;
 			var overInk = false;
 			var preventInk = false;
-			var index = index;
-			var longTouch = null;
-			var scrollTouch = null;
+			var preventInkDeep = false;
+			var preventInkParent = false;
+			var preventInkParentDeep = 1;
+			var enableClick = false;
+			var mobiledevice = ('ontouchstart' in document.documentElement);
 			
 			elem = $(element);
 			element = elem[0];
+			overInk = elem.hasClass('r-overink');
 
 			if(typeof PointerEventsPolyfill !== "undefined"){
 				PointerEventsPolyfill.initialize({
@@ -210,6 +211,8 @@
 					'mouseEvents': ['click','dblclick']
 				});
 			}
+
+			enableClick = elem.find(".r-noink-hover").length > 0;
 
 			var listenType = {
 				"start" : ('ontouchstart' in document.documentElement) 
@@ -253,9 +256,22 @@
 				inkColor = typeof element.attributes['r-color'] !== "undefined" ? element.attributes['r-color'].nodeValue : false;
 				customOpacity = typeof element.attributes['r-opacity'] !== "undefined" ? element.attributes['r-opacity'].nodeValue : null;
 				preventInk = typeof element.attributes['r-prevent'] !== "undefined" ? element.attributes['r-prevent'].nodeValue : false;
+				rPreventDeep = typeof element.rPreventDeep !== "undefined" ? element.rPreventDeep.nodeValue : false;
+				preventInkParent = typeof element.rPreventParent !== "undefined" ? element.rPreventParent.nodeValue : false;
+				preventInkParentDeep = typeof element.rPreventParentDeep !== "undefined" ? element.rPreventParentDeep.nodeValue : 1;
 			}
 
 			_setValue();
+
+
+			function parentDeep(el,deep){
+				if(deep == 0) return false;
+				if($(el).parent().is(preventInkParent)){
+					return true;
+				}else{
+					return parentDeep($(el).parent(),deep-1);
+				}
+			}
 
 			elem.bind(listenType.start,createRipple);
 
@@ -266,6 +282,9 @@
 					var date = new Date();
 					timeStamp = date.getTime();
 				}
+				
+                var elem = $(event.currentTarget).closest('.ripple-cont');
+                var rippleCont = elem.children(".ink-content");
 
 				if(elem.hasClass('r-childprevent')) return elem.removeClass('r-childprevent');
 				elem.parents(".ripple-cont").addClass('r-childprevent');
@@ -285,6 +304,8 @@
 				var ink = inkWrapper.find("i");
 				var incr = 0;
 				var incrmax = 0;
+				var longTouch = null;
+				var scrollTouch = null;
 
 				rippleCont.find(".ink").removeClass('new');
 				inkWrapper.addClass('new');
