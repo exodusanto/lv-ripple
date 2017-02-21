@@ -3,6 +3,7 @@
 * Name: lv-ripple
 * Description: Material ripple effects
 */
+
 (function($,exports){
 
 	var lvRipple = (function(){
@@ -90,37 +91,50 @@
 		}
 
 		function createMarkup(element){
-			if($(element).hasClass('ripple-cont')){
-				while($(element)[0].attributes.length > 0){
-   					$(element)[0].removeAttribute($(element)[0].attributes[0].name);
-				}
-				return element[0].outerHTML;
-			}
+            if(element.length == 0 || $(element).hasClass('.ripple-cont')) return;
 
-			var content = $(element).html();
-			var markup = $("<button></button>");
-			var overink = $(element).hasClass('r-overink');
+            var savedAttr = [];
 
-			if(overink){
-				markup = $("<div></div>");
-				var replacement = $("<button></button>");
-			}
+            var content = $(element).html();
+            var markup = $("<button></button>");
+            var overink = $(element).hasClass('r-overink');
 
+            if(overink){
+                markup = $("<div></div>");
+                var replacement = $("<button></button>");
+            }
 
-			if($(element).prop('nodeName').toLowerCase() != "ripple"){
-				var cloneElement = $(element).clone();
-				$(cloneElement).empty();
-				$(cloneElement).removeClass('ripple');
-				$(cloneElement).removeAttr('ripple');
-				$(cloneElement).removeAttr('data-ripple');
-				$(cloneElement).removeAttr('lv-ripple');
-				
-				if(overink){
+            if($(element).prop('nodeName').toLowerCase() != "ripple"){
+                var cloneElement = $(element).clone();
+                $(cloneElement).empty();
+                $(cloneElement).removeClass('ripple');
+                $(cloneElement).removeAttr('ripple');
+                $(cloneElement).removeAttr('data-ripple');
+                $(cloneElement).removeAttr('lv-ripple');
+
+                
+                if(overink){
+                    savedAttr = $(cloneElement).prop("attributes");
 					replacement = $(cloneElement);
 				}else{
 					markup = $(cloneElement);
 				}
 			}
+
+            if(overink){
+                $.each(savedAttr, function(index, item) {
+                    if(item.name != "class"){
+                        if(item.name.match(/^r-*/)){
+                            markup.attr(item.name, item.value);
+                            replacement.removeAttr(item.name);
+                        }
+                    }else{
+                        var classOptions = item.value.match(/(r-)\S+(\s{1,})?/g).join(' ');
+                        markup.attr(item.name, classOptions);
+                        replacement.removeClass(classOptions);
+                    }
+                });
+            }
 
 			markup.addClass('ripple-cont');
 
@@ -134,6 +148,13 @@
 			}
 
 			markup.append("<div class='ink-content'></div>");
+
+            $.each(elements.enable,function(index,val){
+                if(val === element){
+                    elements.enable[index] = markup;
+                }
+            });
+
 			return markup[0].outerHTML;
 		}
 
@@ -188,6 +209,9 @@
 		}
 
 		function rippleInit(element,index){
+
+            if($(element).length == 0) return;
+
 			var elem = null;
 			var inkLight = false;
 			var inkColor = false;
@@ -256,9 +280,9 @@
 				inkColor = typeof element.attributes['r-color'] !== "undefined" ? element.attributes['r-color'].nodeValue : false;
 				customOpacity = typeof element.attributes['r-opacity'] !== "undefined" ? element.attributes['r-opacity'].nodeValue : null;
 				preventInk = typeof element.attributes['r-prevent'] !== "undefined" ? element.attributes['r-prevent'].nodeValue : false;
-				rPreventDeep = typeof element.rPreventDeep !== "undefined" ? element.rPreventDeep.nodeValue : false;
-				preventInkParent = typeof element.rPreventParent !== "undefined" ? element.rPreventParent.nodeValue : false;
-				preventInkParentDeep = typeof element.rPreventParentDeep !== "undefined" ? element.rPreventParentDeep.nodeValue : 1;
+				rPreventDeep = typeof element.attributes['r-prevent-deep'] !== "undefined" ? element.attributes['r-prevent-deep'].nodeValue : false;
+				preventInkParent = typeof element.attributes['r-prevent-parent'] !== "undefined" ? element.attributes['r-prevent-parent'].nodeValue : false;
+				preventInkParentDeep = typeof element.attributes['r-prevent-parent-deep'] !== "undefined" ? element.attributes['r-prevent-parent-deep'].nodeValue : 1;
 			}
 
 			_setValue();
@@ -296,7 +320,11 @@
 
 				if(typeof element.attributes['r-disabled'] != "undefined" || elem.hasClass('disabled'))return;
 				if(targetInk.hasClass('r-noink') || !!targetInk.parents('.r-noink').length)return;
-				if(!!preventInk && elem.is(preventInk))return;
+                if((event.type == "mousedown" || event.type == "touchstart") && (targetInk.hasClass('r-noink-hover') || !!targetInk.parents('.r-noink-hover').length))return;
+                if(event.type == "click" && !mobiledevice && !targetInk.hasClass('r-noink-hover') && !targetInk.parents('.r-noink-hover').length)return;
+                if(!!preventInk && $(elem).is(preventInk))return;
+                if(!!preventInkDeep && ($(elem).is(preventInkDeep) || $(elem).find(preventInkDeep).length != 0))return;
+                if(!!preventInkParent && parentDeep(elem,preventInkParentDeep))return;
 
 				if(!!overInk)rippleCont.show(0);
 
@@ -484,6 +512,8 @@
 
 			var patt = /^#([\da-fA-F]{2})([\da-fA-F]{2})([\da-fA-F]{2})$/;
 			var matches = patt.exec(hex);
+
+            if(matches === null) throw "Wrong hex format: please use #ffffff"; 
 
 			return {
 				r:parseInt(matches[1], 16),
